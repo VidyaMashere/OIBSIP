@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Ordering System</title>
+    <style>
+        /* Global Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Auth Section Styles */
+        .auth-section {
+            background: white;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .auth-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #e74c3c;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #c0392b;
+        }
+        
+        .btn-secondary {
+            background: #3498db;
+        }
+        
+        .btn-secondary:hover {
+            background: #2980b9;
+        }
+        
+        .switch-auth {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .switch-auth a {
+            color: #3498db;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .switch-auth a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Dashboard Styles */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .main-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Pizza Builder Styles */
+        .builder-section {
+            margin-bottom: 30px;
+        }
+        
+        .builder-section h3 {
+            margin-bottom: 15px;
+            color: #e74c3c;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 5px;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .option-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .option-card:hover {
+            border-color: #e74c3c;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .option-card.selected {
+            border-color: #e74c3c;
+            background-color: rgba(231, 76, 60, 0.1);
+        }
+        
+        .option-card img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        /* Order Summary */
+        .order-summary {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+        
+        .order-summary h3 {
+            margin-bottom: 15px;
+        }
+        
+        .order-summary ul {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+        
+        .order-summary li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .order-summary .total {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        
+        /* Admin Dashboard */
+        .admin-section {
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        table th {
+            background-color: #f2f2f2;
+        }
+        
+        .status-select {
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Auth Section -->
+        <div id="auth-section" class="auth-section">
+            <div id="login-form">
+                <h2>Login</h2>
+                <div id="login-error" class="error-message hidden"></div>
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password">
+                </div>
+                <button id="login-btn" class="btn">Login</button>
+                <div class="switch-auth">
+                    <a id="show-register">Don't have an account? Register</a>
+                </div>
+            </div>
+
+            <div id="register-form" class="hidden">
+                <h2>Register</h2>
+                <div id="register-error" class="error-message hidden"></div>
+                <div class="form-group">
+                    <label for="register-name">Name</label>
+                    <input type="text" id="register-name" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" placeholder="Create a password">
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password">Confirm Password</label>
+                    <input type="password" id="register-confirm-password" placeholder="Confirm your password">
+                </div>
+                <button id="register-btn" class="btn">Register</button>
+                <div class="switch-auth">
+                    <a id="show-login">Already have an account? Login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="hidden">
+            <div class="dashboard">
+                <div class="sidebar">
+                    <h2>Pizza Shop</h2>
+                    <p id="welcome-message">Welcome back!</p>
+                    <div id="user-nav">
+                        <button id="build-pizza-btn" class="btn">Build Pizza</button>
+                        <button id="my-orders-btn" class="btn btn-secondary">My Orders</button>
+                        <button id="logout-btn" class="btn">Logout</button>
+                    </div>
+                    <div id="admin-nav" class="hidden">
+                        <button id="manage-orders-btn" class="btn">Manage Orders</button>
+                        <button id="manage-inventory-btn" class="btn btn-secondary">Manage Inventory</button>
+                        <button id="admin-logout-btn" class="btn">Logout</button>
+                    </div>
+                </div>
+
+                <div class="main-content">
+                    <!-- Pizza Builder -->
+                    <div id="pizza-builder-section">
+                        <h2>Build Your Pizza</h2>
+                        
+                        <div class="builder-section">
+                            <h3>1. Choose Your Base</h3>
+                            <div class="options-grid" id="base-options">
+                                <!-- Base options will be added by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="builder-section">
+                            <h3>2. Select Sauce</h3>
+                            <div class="options-grid" id="sauce-options">
+                                <!-- Sauce options will be added by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="builder-section">
+                            <h3>3. Add Cheese</h3>
+                            <div class="options-grid" id="cheese-options">
+                                <!-- Cheese options will be added by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="builder-section">
+                            <h3>4. Select Veggies</h3>
+                            <div class="options-grid" id="veggie-options">
+                                <!-- Veggie options will be added by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="order-summary">
+                            <h3>Your Pizza</h3>
+                            <ul id="order-items">
+                                <!-- Order items will be added by JavaScript -->
+                            </ul>
+                            <div class="total">Total: ₹<span id="order-total">0</span></div>
+                            <button id="checkout-btn" class="btn">Proceed to Checkout</button>
+                        </div>
+                    </div>
+
+                    <!-- My Orders -->
+                    <div id="my-orders-section" class="hidden">
+                        <h2>My Orders</h2>
+                        <div id="orders-list">
+                            <!-- Orders will be added by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Admin - Manage Orders -->
+                    <div id="manage-orders-section" class="hidden">
+                        <h2>Manage Orders</h2>
+                        <table id="all-orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Orders will be added by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Admin - Manage Inventory -->
+                    <div id="manage-inventory-section" class="hidden">
+                        <h2>Manage Inventory</h2>
+                        <button id="add-inventory-btn" class="btn">Add New Item</button>
+                        <table id="inventory-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Inventory items will be added by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock Database (in a real app, this would be server-side)
+        const database = {
+            users: [
+                { id: 1, name: "Admin", email: "admin@pizza.com", password: "admin123", role: "admin" },
+                { id: 2, name: "John Doe", email: "john@example.com", password: "password123", role: "user" }
+            ],
+            inventory: [
+                { id: 1, name: "Thin Crust", type: "base", quantity: 50, price: 50, threshold: 10 },
+                { id: 2, name: "Thick Crust", type: "base", quantity: 40, price: 60, threshold: 10 },
+                { id: 3, name: "Cheese Burst", type: "base", quantity: 30, price: 80, threshold: 10 },
+                { id: 4, name: "Tomato Sauce", type: "sauce", quantity: 100, price: 20, threshold: 20 },
+                { id: 5, name: "Pesto Sauce", type: "sauce", quantity: 80, price: 30, threshold: 20 },
+                { id: 6, name: "Mozzarella", type: "cheese", quantity: 120, price: 40, threshold: 30 },
+                { id: 7, name: "Cheddar", type: "cheese", quantity: 90, price: 35, threshold: 30 },
+                { id: 8, name: "Bell Peppers", type: "veggie", quantity: 60, price: 25, threshold: 20 },
+                { id: 9, name: "Onions", type: "veggie", quantity: 70, price: 15, threshold: 20 },
+                { id: 10, name: "Mushrooms", type: "veggie", quantity: 50, price: 30, threshold: 20 }
+            ],
+            orders: []
+        };
+
+        // Current User and App State
+        let currentUser = null;
+        let currentPizza = {
+            base: null,
+            sauce: null,
+            cheese: null,
+            veggies: []
+        };
+
+        // DOM Elements
+        const authSection = document.getElementById('auth-section');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginEmail = document.getElementById('login-email');
+        const loginPassword = document.getElementById('login-password');
+        const registerName = document.getElementById('register-name');
+        const registerEmail = document.getElementById('register-email');
+        const registerPassword = document.getElementById('register-password');
+        const registerConfirmPassword = document.getElementById('register-confirm-password');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const showRegister = document.getElementById('show-register');
+        const showLogin = document.getElementById('show-login');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const userNav = document.getElementById('user-nav');
+        const adminNav = document.getElementById('admin-nav');
+        const buildPizzaBtn = document.getElementById('build-pizza-btn');
+        const myOrdersBtn = document.getElementById('my-orders-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const adminLogoutBtn = document.getElementById('admin-logout-btn');
+        const manageOrdersBtn = document.getElementById('manage-orders-btn');
+        const manageInventoryBtn = document.getElementById('manage-inventory-btn');
+        const pizzaBuilderSection = document.getElementById('pizza-builder-section');
+        const myOrdersSection = document.getElementById('my-orders-section');
+        const manageOrdersSection = document.getElementById('manage-orders-section');
+        const manageInventorySection = document.getElementById('manage-inventory-section');
+        const baseOptions = document.getElementById('base-options');
+        const sauceOptions = document.getElementById('sauce-options');
+        const cheeseOptions = document.getElementById('cheese-options');
+        const veggieOptions = document.getElementById('veggie-options');
+        const orderItems = document.getElementById('order-items');
+        const orderTotal = document.getElementById('order-total');
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const ordersList = document.getElementById('orders-list');
+        const allOrdersTable = document.getElementById('all-orders-table');
+        const inventoryTable = document.getElementById('inventory-table');
+        const addInventoryBtn = document.getElementById('add-inventory-btn');
+
+        // Initialize the app
+        function init() {
+            // Load inventory options
+            loadInventoryOptions();
+            
+            // Set up event listeners
+            setupEventListeners();
+        }
+
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Auth form toggles
+            showRegister.addEventListener('click', () => {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+            });
+            
+            showLogin.addEventListener('click', () => {
+                registerForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            });
+            
+            // Login button
+            loginBtn.addEventListener('click', handleLogin);
+            
+            // Register button
+            registerBtn.addEventListener('click', handleRegister);
+            
+            // Navigation buttons
+            buildPizzaBtn.addEventListener('click', () => {
+                myOrdersSection.classList.add('hidden');
+                manageOrdersSection.classList.add('hidden');
+                manageInventorySection.classList.add('hidden');
+                pizzaBuilderSection.classList.remove('hidden');
+            });
+            
+            myOrdersBtn.addEventListener('click', () => {
+                pizzaBuilderSection.classList.add('hidden');
+                manageOrdersSection.classList.add('hidden');
+                manageInventorySection.classList.add('hidden');
+                myOrdersSection.classList.remove('hidden');
+                loadUserOrders();
+            });
+            
+            logoutBtn.addEventListener('click', handleLogout);
+            adminLogoutBtn.addEventListener('click', handleLogout);
+            
+            manageOrdersBtn.addEventListener('click', () => {
+                pizzaBuilderSection.classList.add('hidden');
+                myOrdersSection.classList.add('hidden');
+                manageInventorySection.classList.add('hidden');
+                manageOrdersSection.classList.remove('hidden');
+                loadAllOrders();
+            });
+            
+            manageInventoryBtn.addEventListener('click', () => {
+                pizzaBuilderSection.classList.add('hidden');
+                myOrdersSection.classList.add('hidden');
+                manageOrdersSection.classList.add('hidden');
+                manageInventorySection.classList.remove('hidden');
+                loadInventory();
+            });
+            
+            // Checkout button
+            checkoutBtn.addEventListener('click', handleCheckout);
+        }
+
+        // Handle login
+        function handleLogin() {
+            const email = loginEmail.value;
+            const password = loginPassword.value;
+            
+            // Simple validation
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+            
+            // Find user in database
+            const user = database.users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                showDashboard();
+            } else {
+                alert('Invalid email or password');
+            }
+        }
+
+        // Handle registration
+        function handleRegister() {
+            const name = registerName.value;
+            const email = registerEmail.value;
+            const password = registerPassword.value;
+            const confirmPassword = registerConfirmPassword.value;
+            
+            // Validation
+            if (!name || !email || !password || !confirmPassword) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            if (database.users.some(u => u.email === email)) {
+                alert('Email already registered');
+                return;
+            }
+            
+            // Create new user
+            const newUser = {
+                id: database.users.length + 1,
+                name,
+                email,
+                password,
+                role: 'user'
+            };
+            
+            database.users.push(newUser);
+            currentUser = newUser;
+            showDashboard();
+            
+            // Reset form
+            registerName.value = '';
+            registerEmail.value = '';
+            registerPassword.value = '';
+            registerConfirmPassword.value = '';
+        }
+
+        // Handle logout
+        function handleLogout() {
+            currentUser = null;
+            currentPizza = {
+                base: null,
+                sauce: null,
+                cheese: null,
+                veggies: []
+            };
+            
+            authSection.classList.remove('hidden');
+            dashboard.classList.add('hidden');
+            
+            // Reset forms
+            loginEmail.value = '';
+            loginPassword.value = '';
+        }
+
+        // Show dashboard after login
+        function showDashboard() {
+            authSection.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+            
+            welcomeMessage.textContent = `Welcome, ${currentUser.name}!`;
+            
+            if (currentUser.role === 'admin') {
+                userNav.classList.add('hidden');
+                adminNav.classList.remove('hidden');
+                manageOrdersSection.classList.remove('hidden');
+                pizzaBuilderSection.classList.add('hidden');
+                myOrdersSection.classList.add('hidden');
+                loadAllOrders();
+            } else {
+                userNav.classList.remove('hidden');
+                adminNav.classList.add('hidden');
+                pizzaBuilderSection.classList.remove('hidden');
+                myOrdersSection.classList.add('hidden');
+                manageOrdersSection.classList.add('hidden');
+                manageInventorySection.classList.add('hidden');
+            }
+        }
+
+        // Load inventory options for pizza builder
+        function loadInventoryOptions() {
+            // Load base options
+            const bases = database.inventory.filter(item => item.type === 'base');
+            baseOptions.innerHTML = bases.map(base => `
+                <div class="option-card" data-id="${base.id}" data-type="base">
+                    <img src="https://via.placeholder.com/150?text=${base.name}" alt="${base.name}">
+                    <h4>${base.name}</h4>
+                    <p>₹${base.price}</p>
+                </div>
+            `).join('');
+            
+            // Load sauce options
+            const sauces = database.inventory.filter(item => item.type === 'sauce');
+            sauceOptions.innerHTML = sauces.map(sauce => `
+                <div class="option-card" data-id="${sauce.id}" data-type="sauce">
+                    <img src="https://via.placeholder.com/150?text=${sauce.name}" alt="${sauce.name}">
+                    <h4>${sauce.name}</h4>
+                    <p>₹${sauce.price}</p>
+                </div>
+            `).join('');
+            
+            // Load cheese options
+            const cheeses = database.inventory.filter(item => item.type === 'cheese');
+            cheeseOptions.innerHTML = cheeses.map(cheese => `
+                <div class="option-card" data-id="${cheese.id}" data-type="cheese">
+                    <img src="https://via.placeholder.com/150?text=${cheese.name}" alt="${cheese.name}">
+                    <h4>${cheese.name}</h4>
+                    <p>₹${cheese.price}</p>
+                </div>
+            `).join('');
+            
+            // Load veggie options
+            const veggies = database.inventory.filter(item => item.type === 'veggie');
+            veggieOptions.innerHTML = veggies.map(veggie => `
+                <div class="option-card" data-id="${veggie.id}" data-type="veggie">
+                    <img src="https://via.placeholder.com/150?text=${veggie.name}" alt="${veggie.name}">
+                    <h4>${veggie.name}</h4>
+                    <p>₹${veggie.price}</p>
+                </div>
+            `).join('');
+            
+            // Add click event listeners to all option cards
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const type = this.getAttribute('data-type');
+                    const item = database.inventory.find(i => i.id === id);
+                    
+                    // Handle selection based on type
+                    if (type === 'base') {
+                        // Only one base can be selected
+                        document.querySelectorAll('.option-card[data-type="base"]').forEach(c => {
+                            c.classList.remove('selected');
+                        });
+                        currentPizza.base = item;
+                    } else if (type === 'sauce') {
+                        // Only one sauce can be selected
+                        document.querySelectorAll('.option-card[data-type="sauce"]').forEach(c => {
+                            c.classList.remove('selected');
+                        });
+                        currentPizza.sauce = item;
+                    } else if (type === 'cheese') {
+                        // Only one cheese can be selected
+                        document.querySelectorAll('.option-card[data-type="cheese"]').forEach(c => {
+                            c.classList.remove('selected');
+                        });
+                        currentPizza.cheese = item;
+                    } else if (type === 'veggie') {
+                        // Toggle veggie selection
+                        const index = currentPizza.veggies.findIndex(v => v.id === id);
+                        if (index === -1) {
+                            currentPizza.veggies.push(item);
+                        } else {
+                            currentPizza.veggies.splice(index, 1);
+                        }
+                    }
+                    
+                    // Toggle selected class
+                    this.classList.toggle('selected');
+                    
+                    // Update order summary
+                    updateOrderSummary();
+                });
+            });
+        }
+
+        // Update the order summary
+        function updateOrderSummary() {
+            orderItems.innerHTML = '';
+            let total = 0;
+            
+            if (currentPizza.base) {
+                orderItems.innerHTML += `<li>Base: ${currentPizza.base.name} - ₹${currentPizza.base.price}</li>`;
+                total += currentPizza.base.price;
+            }
+            
+            if (currentPizza.sauce) {
+                orderItems.innerHTML += `<li>Sauce: ${currentPizza.sauce.name} - ₹${currentPizza.sauce.price}</li>`;
+                total += currentPizza.sauce.price;
+            }
+            
+            if (currentPizza.cheese) {
+                orderItems.innerHTML += `<li>Cheese: ${currentPizza.cheese.name} - ₹${currentPizza.cheese.price}</li>`;
+                total += currentPizza.cheese.price;
+            }
+            
+            if (currentPizza.veggies.length > 0) {
+                orderItems.innerHTML += `<li>Veggies: ${currentPizza.veggies.map(v => v.name).join(', ')} - ₹${currentPizza.veggies.reduce((sum, v) => sum + v.price, 0)}</li>`;
+                total += currentPizza.veggies.reduce((sum, v) => sum + v.price, 0);
+            }
+            
+            if (total === 0) {
+                orderItems.innerHTML = '<li>Select items to build your pizza</li>';
+            }
+            
+            orderTotal.textContent = total;
+        }
+
+        // Handle checkout
+        function handleCheckout() {
+            if (!currentPizza.base || !currentPizza.sauce || !currentPizza.cheese) {
+                alert('Please select at least base, sauce and cheese for your pizza');
+                return;
+            }
+            
+            // In a real app, this would integrate with Razorpay API
+            // For this demo, we'll simulate a successful payment
+            
+            // Create order
+            const orderItems = [
+                { name: currentPizza.base.name, type: 'base', quantity: 1, price: currentPizza.base.price },
+                { name: currentPizza.sauce.name, type: 'sauce', quantity: 1, price: currentPizza.sauce.price },
+                { name: currentPizza.cheese.name, type: 'cheese', quantity: 1, price: currentPizza.cheese.price },
+                ...currentPizza.veggies.map(v => ({ name: v.name, type: 'veggie', quantity: 1, price: v.price }))
+            ];
+            
+            const total = orderItems.reduce((sum, item) => sum + item.price, 0);
+            
+            const newOrder = {
+                id: database.orders.length + 1,
+                userId: currentUser.id,
+                items: orderItems,
+                total,
+                status: 'received',
+                paymentId: `pay_${Math.random().toString(36).substr(2, 9)}`,
+                createdAt: new Date().toISOString()
+            };
+            
+            database.orders.push(newOrder);
+            
+            // Update inventory (in a real app, this would check quantities first)
+            orderItems.forEach(item => {
+                const inventoryItem = database.inventory.find(i => i.name === item.name && i.type === item.type);
+                if (inventoryItem) {
+                    inventoryItem.quantity -= item.quantity;
+                    
+                    // Check threshold (in a real app, this would send email notification)
+                    if (inventoryItem.quantity < inventoryItem.threshold) {
+                        console.log(`ALERT: ${inventoryItem.name} quantity is below threshold!`);
+                    }
+                }
+            });
+            
+            alert(`Order placed successfully! Your order ID is ${newOrder.id}`);
+            
+            // Reset pizza builder
+            currentPizza = {
+                base: null,
+                sauce: null,
+                cheese: null,
+                veggies: []
+            };
+            
+            // Update UI
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            updateOrderSummary();
+            
+            // Show orders
+            myOrdersSection.classList.remove('hidden');
+            pizzaBuilderSection.classList.add('hidden');
+            loadUserOrders();
+        }
+
+        // Load user's orders
+        function loadUserOrders() {
+            const userOrders = database.orders.filter(order => order.userId === currentUser.id);
+            
+            if (userOrders.length === 0) {
+                ordersList.innerHTML = '<p>You have no orders yet.</p>';
+                return;
+            }
+            
+            ordersList.innerHTML = userOrders.map(order => `
+                <div class="order-card">
+                    <h3>Order #${order.id}</h3>
+                    <p>Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                    <p>Status: ${order.status}</p>
+                    <p>Total: ₹${order.total}</p>
+                    <ul>
+                        ${order.items.map(item => `<li>${item.name} - ₹${item.price}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+
+        // Load all orders (for admin)
+        function loadAllOrders() {
+            const tableBody = allOrdersTable.querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            if (database.orders.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6">No orders found</td></tr>';
+                return;
+            }
+            
+            database.orders.forEach(order => {
+                const user = database.users.find(u => u.id === order.userId);
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${user ? user.name : 'Unknown'}</td>
+                    <td>${order.items.length} items</td>
+                    <td>₹${order.total}</td>
+                    <td>
+                        <select class="status-select" data-order-id="${order.id}">
+                            <option value="received" ${order.status === 'received' ? 'selected' : ''}>Received</option>
+                            <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>Preparing</option>
+                            <option value="baking" ${order.status === 'baking' ? 'selected' : ''}>Baking</option>
+                            <option value="quality-check" ${order.status === 'quality-check' ? 'selected' : ''}>Quality Check</option>
+                            <option value="out-for-delivery" ${order.status === 'out-for-delivery' ? 'selected' : ''}>Out for Delivery</option>
+                            <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn" data-order-id="${order.id}">View Details</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to status selects
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const orderId = parseInt(this.getAttribute('data-order-id'));
+                    const newStatus = this.value;
+                    
+                    const order = database.orders.find(o => o.id === orderId);
+                    if (order) {
+                        order.status = newStatus;
+                        alert(`Order ${orderId} status updated to ${newStatus}`);
+                    }
+                });
+            });
+        }
+
+        // Load inventory (for admin)
+        function loadInventory() {
+            const tableBody = inventoryTable.querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            database.inventory.forEach(item => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.type}</td>
+                    <td>${item.quantity} ${item.quantity < item.threshold ? ' (LOW)' : ''}</td>
+                    <td>₹${item.price}</td>
+                    <td>
+                        <button class="btn">Edit</button>
+                        <button class="btn btn-secondary">Restock</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Initialize the app when the page loads
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
