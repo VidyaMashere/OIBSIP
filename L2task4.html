@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .form-switch {
+            margin-top: 1rem;
+            color: #666;
+            cursor: pointer;
+        }
+        .form-switch:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: #d9534f;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        .success {
+            color: #5cb85c;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Form -->
+        <div id="login-form">
+            <h2>Login</h2>
+            <div id="login-error" class="error hidden"></div>
+            <div id="login-success" class="success hidden"></div>
+            <input type="text" id="login-username" placeholder="Username" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <button id="login-btn">Login</button>
+            <div class="form-switch" id="show-register">Don't have an account? Register</div>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="register-form" class="hidden">
+            <h2>Register</h2>
+            <div id="register-error" class="error hidden"></div>
+            <div id="register-success" class="success hidden"></div>
+            <input type="text" id="register-username" placeholder="Username" required>
+            <input type="password" id="register-password" placeholder="Password" required>
+            <input type="password" id="register-confirm-password" placeholder="Confirm Password" required>
+            <button id="register-btn">Register</button>
+            <div class="form-switch" id="show-login">Already have an account? Login</div>
+        </div>
+
+        <!-- Secure Page -->
+        <div id="secure-page" class="hidden">
+            <h2>Welcome, <span id="logged-in-user"></span>!</h2>
+            <p>This is your secure page. Only authenticated users can see this content.</p>
+            <button id="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // User database (in a real app, this would be server-side)
+        const users = {
+            // Pre-populated test user
+            "admin": "admin123"
+        };
+
+        // DOM Elements
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const securePage = document.getElementById('secure-page');
+        const showRegister = document.getElementById('show-register');
+        const showLogin = document.getElementById('show-login');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loggedInUser = document.getElementById('logged-in-user');
+
+        // Form toggle
+        showRegister.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            clearMessages();
+        });
+
+        showLogin.addEventListener('click', () => {
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            clearMessages();
+        });
+
+        // Clear error/success messages
+        function clearMessages() {
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('login-success').classList.add('hidden');
+            document.getElementById('register-error').classList.add('hidden');
+            document.getElementById('register-success').classList.add('hidden');
+        }
+
+        // Login function
+        loginBtn.addEventListener('click', () => {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const errorElement = document.getElementById('login-error');
+            const successElement = document.getElementById('login-success');
+
+            // Clear previous messages
+            errorElement.classList.add('hidden');
+            successElement.classList.add('hidden');
+
+            // Validation
+            if (!username || !password) {
+                errorElement.textContent = 'Please enter both username and password';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+
+            // Check credentials
+            if (users[username] && users[username] === password) {
+                // Successful login
+                successElement.textContent = 'Login successful!';
+                successElement.classList.remove('hidden');
+                
+                // Show secure page
+                loginForm.classList.add('hidden');
+                securePage.classList.remove('hidden');
+                loggedInUser.textContent = username;
+                
+                // Clear form
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+            } else {
+                errorElement.textContent = 'Invalid username or password';
+                errorElement.classList.remove('hidden');
+            }
+        });
+
+        // Registration function
+        registerBtn.addEventListener('click', () => {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            const errorElement = document.getElementById('register-error');
+            const successElement = document.getElementById('register-success');
+
+            // Clear previous messages
+            errorElement.classList.add('hidden');
+            successElement.classList.add('hidden');
+
+            // Validation
+            if (!username || !password || !confirmPassword) {
+                errorElement.textContent = 'Please fill in all fields';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                errorElement.textContent = 'Passwords do not match';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+
+            if (users[username]) {
+                errorElement.textContent = 'Username already exists';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+
+            // Register user
+            users[username] = password;
+            successElement.textContent = 'Registration successful! You can now login.';
+            successElement.classList.remove('hidden');
+            
+            // Clear form
+            document.getElementById('register-username').value = '';
+            document.getElementById('register-password').value = '';
+            document.getElementById('register-confirm-password').value = '';
+        });
+
+        // Logout function
+        logoutBtn.addEventListener('click', () => {
+            securePage.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
